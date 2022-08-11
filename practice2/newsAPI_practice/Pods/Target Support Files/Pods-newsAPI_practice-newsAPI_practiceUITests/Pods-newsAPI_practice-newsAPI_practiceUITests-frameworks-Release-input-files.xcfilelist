@@ -1,0 +1,4 @@
+${PODS_ROOT}/Target Support Files/Pods-newsAPI_practice-newsAPI_practiceUITests/Pods-newsAPI_practice-newsAPI_practiceUITests-frameworks.sh
+${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework
+${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework
+${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework

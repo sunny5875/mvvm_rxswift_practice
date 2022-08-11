@@ -1,0 +1,6 @@
+framework module Pods_newsAPI_practiceTests {
+  umbrella header "Pods-newsAPI_practiceTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
