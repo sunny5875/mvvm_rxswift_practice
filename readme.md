@@ -1,5 +1,34 @@
-# 곰튀김님의 4시간만에 Rxswift 배우기
+# Rxswift와 MVVM 모두 연습해보기🙌🏻
 
+## MVVM
+model view viewModel 
+### 'M'VVM의 Model
+MVVM 아키텍쳐에서 Model은 데이터 구조를 정의하고 ViewModel에게 결과를 알려준다.
+여기서의 Model은 View와 이어지지 않는다.
+### M'V'VM 의 View
+MVVM의 View는 흔히 사용하는 ViewController에 코드를 작성한다.
+view는 사용자와의 상호작용을 통해 이벤트가 일어나면 ViewModel에게 알려주며,
+ViewModel이 업데이트 요청한 데이터를 보여준다.
+### MV'VM' 의 ViewModel
+ViewModel은 사용자의 상호작용을 view가 보내주면 그에 맞는 이벤트를 처리하고,
+Model의 Read Update Delete를 담당한다.
+
+- 장점 : view, model, viewModel 모두 독립적으로 테스트가 가능
+- 단점 : 설계가 어렵고 뷰에 대한 처리가 복잡해지면 뷰모델도 거대해진다는 문제점 존재
+- mvvm의 핵심이 옵저버블…?
+### MVP vs MVVM
+- mvp에서의 presentor은 mvc의 viewController가 모든 역할을 다하니까 presentor는 화면 처리만 view한테 주는 것을 의미
+- mvp는 다 처리하고나서 view한테 그려줘라고 하는 것!!
+- mvvm은 모델하고만 놀고 view와 1:다 관계이며 viewModel에서 view로 가는 방향이 없음.
+- model하고만 놂
+- 단, view가 그릴려면 viewModel을 view가 지켜보고 봐서 알아서 바꿔주게 함
+
+
+# MVVM & RxSwift 학습
+
+
+
+## 김튀김님의 4시간 만에 배우기
 - github : [https://github.com/iamchiwon/RxSwift_In_4_Hours/blob/step3/rx/Example/step1/Podfile](https://github.com/iamchiwon/RxSwift_In_4_Hours/blob/step3/rx/Example/step1/Podfile)
 - 김튀김님의 github : [https://github.com/ClintJang/awesome-swift-korean-lecture/blob/master/README.md#rxswift](https://github.com/ClintJang/awesome-swift-korean-lecture/blob/master/README.md#rxswift)
 
@@ -218,3 +247,144 @@ subsribe하고 나서 데이터 들어오면 보내지만 또subscribe하면 앞
 ![스크린샷 2022-08-02 오후 5.04.38.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5997b273-41e4-4274-b675-8960045bd756/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-08-02_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_5.04.38.png)
 
 cf. 내가 추가한 빈칸일 때에도 불빛이 꺼지게 하는 코드
+![스크린샷 2022-08-02 오후 6.08.16.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/55d39690-b278-4526-8203-dfe77d6a8964/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-08-02_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_6.08.16.png)
+
+---
+
+cf. subscribe 대신에 bind를 사용하여 간단하게 줄인 코드, 들어온 값을 단순히 세팅하는 경우에는 bind가 더 쉽다!
+
+![스크린샷 2022-08-04 오전 10.25.37.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/311123d9-b9fd-4b97-aa91-945cc5b49cc6/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-08-04_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_10.25.37.png)
+
+## **cf.로그인 앱에서 viewModel 적용해보기(input.output 적용해서)**
+
+- viewController에서 받은 입력(observable)을 그대로 viewModel에 input으로 가져온다
+- 그 후, output은 input을 이용하여 만든다. 이 때 observable(input)을 구독하여 subject에 결과를 넣은(방출한) 뒤 subject를 observable로 변환하여 output을 만든다
+- viewModel은 output(observable)으로 view를 bind(구독)하여 변경해준다.
+
+```jsx
+func bindUsingViewModel1(){
+        
+        let input = ViewModel.Input(email: idField.rx.text.orEmpty.asObservable(), pw: pwField.rx.text.orEmpty.asObservable())
+        
+        viewModel = ViewModel(input: input)
+        
+        let output = viewModel.calculateOutput(input: input)
+        
+        output.isEmailValid
+            .drive(idValidView.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        output.isPasswordValid
+            .drive(pwValidView.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        //1.UI를 가지고 결정하는 거니까 viewController에 있어도 무방하여 여기서 결정하는 방법
+//        Driver.combineLatest(output.isPasswordValid,output.isEmailValid ){b1,b2 in b1 && b2}
+//            .drive(loginButton.rx.isEnabled)
+//            .disposed(by: disposeBag)
+        
+        //2. viewModel에게 위임하는 방법
+        output.isLoginValid
+            .drive(loginButton.rx.isEnabled)
+            .disposed(by: disposeBag)
+    }
+```
+
+```jsx
+import Foundation
+import RxSwift
+import RxCocoa
+
+protocol ViewModelType {
+    associatedtype Input
+    associatedtype Output
+       
+    var disposeBag: DisposeBag { get set }
+       
+    func calculateOutput(input: Input) -> Output
+}
+
+class ViewModel : ViewModelType {
+    var disposeBag: DisposeBag = DisposeBag()
+    
+    
+    // MARK: - Logic
+    
+    
+    let input: Input
+//    let output: Output
+
+    
+    struct Input {
+        //input : 두개의 입력, observer
+        let email : Observable<String>
+        let pw : Observable<String>
+    }
+    
+    struct Output {
+        //output : 출력, obserable
+        let isEmailValid : Driver<Bool>
+        let isPasswordValid : Driver<Bool>
+        let isLoginValid : Driver<Bool>
+       
+    }
+    
+
+    
+    init(input : Input){
+        self.input = input
+        
+    }
+    
+    func calculateOutput(input : Input) -> Output {
+        //observer를 사용하기 위한 subject
+        let emailSubject = BehaviorRelay(value: false)
+        let pwSubject = BehaviorRelay(value: false)
+        
+        
+       
+        input.email.subscribe(onNext: {
+            email in
+            emailSubject.accept(self.checkEmailValid(email))
+        }).disposed(by: disposeBag)
+        
+        input.pw.subscribe(onNext: {pw in
+            pwSubject.accept(self.checkPasswordValid(pw))
+        }).disposed(by: disposeBag)
+        
+        
+        let loginDriver = Driver.combineLatest(emailSubject.asDriver(),pwSubject.asDriver() ){b1,b2 in b1 && b2}.asDriver()
+        
+        return Output(isEmailValid: emailSubject.asDriver(), isPasswordValid: pwSubject.asDriver(),isLoginValid: loginDriver)
+    }
+                            
+                
+ 
+    
+    
+    private func checkEmailValid(_ email: String) -> Bool {
+//        return email.contains("@") && email.contains(".")
+        return email.isEmpty || (email.contains("@") && email.contains("."))
+    }
+
+    private func checkPasswordValid(_ password: String) -> Bool {
+//        return password.count > 5
+        return password.isEmpty || password.count > 5
+    }
+}
+```
+
+
+## NewsAPI 사용 앱 코딩 및 RxSwift로 변경
+- MVVM_Practice를 참고
+- https://newsapi.org/v2/top-headlines?country=us&apiKey=e9b514c39c5f456db8ed4ecb693b0040
+ 로 GET한 내용을 보여주는 것이 목표!
+- 기존 mvvm 학습 후에 rxSwift를 적용해서 변경 완료함 🙂
+## Json을 받아 table View에 뿌리는 rxSwift 앱 MVVM 적용
+- 곰튀김님의 github / season2 / step2 코드를 이용하여 변경
+- tableView에서 Detail page로 갈 때 Segue 작성에 유의할 것!
+- rxSwift를 이용해서 작성할 경우 조금 다름
+- 버튼을 누르면 number가 하나씩 증가하는 예시
+- rxswift + mvvm
+- 출처 : https://okanghoon.medium.com/rxswift-4-mvvm-with-rxswift-17a9b6d43746
+
