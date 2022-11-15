@@ -27,7 +27,6 @@ class MasterViewController: UIViewController, UITextFieldDelegate {
         view.addSubview(imageView)
   
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        
         imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         
